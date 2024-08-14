@@ -17,18 +17,20 @@
   - optionally: set up `archive_library`
 - Add in `pg_hba` row for the replication
 - Create the base backup
-- 
-
 
 Useful system views:
 - pg_stat_progress_basebackup
 - pg_stat_archiver
 
-##3. Replaying the transaction log
+## 3. Cleaning up the transaction log archive
+- Archives are cleaned using the `pg_archivecleanup` function
+- Set up `archive_cleanup_command` using the function above 
+
+## 4. Replaying the transaction log
 - Set up `restore_command`
 - Set up `recovery_target_time`
   - As alternative of `recovery_target_time`, it's can to use `recovery_target_action`. The source for `recovery_target_action` is function `pg_create_restore_point`.
- 
+  - See also `pg_wal_replay_pause`, `pg_get_wal_replay_pause_state`, `pg_is_wal_replay_paused` functions
   - 
 
 
