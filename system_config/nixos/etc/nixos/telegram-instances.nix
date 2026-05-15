@@ -1,12 +1,16 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
+
+  homePath = "${config.users.users.<username>.home}" ;  #put here your username instead of <username>
+
   mkIconPackage = { name, iconsDir }:
     pkgs.runCommand "${name}-icons" {} ''
+      mkdir -p $out
+      echo "$out"
       for size in 16 24 32 48 64 128 256; do
         if [ -f ${iconsDir}/''${size}x''${size}.png ]; then
-          install -Dm644 ${iconsDir}/''${size}x''${size}.png \
-            $out/share/icons/hicolor/''${size}x''${size}/apps/${name}.png
+          install -Dm644 ${iconsDir} $out/share/icons
         fi
       done
     '';
@@ -17,9 +21,9 @@ let
         name = name;
         desktopName = displayName;
 	comment = "New era of messaging";
-	tryExec = name;
-        exec = "${name} -- %U";
-        icon = name;
+	tryExec = "Telegram";
+        exec = "Telegram -workdir ${workdir} -- %U";
+        icon = if name == "telegram-personal" then "org.telegram.desktop" else name;
 	terminal = false;
         startupWMClass = name;
         #startupWMClass = "TelegramDesktop";
@@ -38,26 +42,13 @@ let
           "SingleMainWindow" = "true";
           "X-GNOME-UsesNotifications" = "true";
           "X-GNOME-SingleWindow" = "true";
-      };
+        };
 
       };
     in
     pkgs.symlinkJoin {
       inherit name;
       paths = [
-        (pkgs.writeShellScriptBin name ''
-        # Подсказка для Qt/Wayland: с каким .desktop ассоциировать окно
-        export QT_WAYLAND_DESKTOP_FILE="${name}.desktop"
-
-        if [ "$1" = "-quit" ]; then
-          exec ${pkgs.telegram-desktop}/bin/telegram-desktop \
-            -workdir "${workdir}" -quit
-        fi
-        exec ${pkgs.telegram-desktop}/bin/telegram-desktop \
-          -workdir "${workdir}" \
-          -name "${name}" \
-          "$@"
-        '')
         desktopItem
         (mkIconPackage { inherit name; inherit iconsDir; })
       ];
@@ -71,15 +62,21 @@ in
     (mkTelegramInstance {
       name = "telegram-personal";
       displayName = "Telegram (Personal)";
-      workdir = "$HOME/.local/share/TelegramDesktop";
-      iconsDir = ./icons/personal;
+      workdir = lib.strings.join "/" ["${homePath}" ".local/share/TelegramDesktop"];
+      iconsDir = lib.strings.join "/" ["${homePath}" "Pictures/icons/telegram-desktop"];
+      #workdir = lib.path.append "${config.users.users.<username>.home}" ".local/share/TelegramDesktop";
+      #workdir = "${HOME}/.local/share/TelegramDesktopWorking";
+      #iconsDir = "$HOME/Pictures/icons/telegram-desktop";
     })
 
     (mkTelegramInstance {
       name = "telegram-work";
       displayName = "Telegram (Work)";
-      workdir = "$HOME/.local/share/TelegramDesktopWorking";
-      iconsDir = ./icons/work;
+      workdir = lib.strings.join "/" ["${homePath}" ".local/share/TelegramDesktopWorking"];
+      iconsDir = lib.strings.join "/" ["${homePath}" "Pictures/icons/telegram-desktop"];
+      #workdir = lib.path.append "${config.users.users.<username>.home}" ".local/share/TelegramDesktopWorking";
+      #workdir = "${HOME}/.local/share/TelegramDesktopWorking";
+      #iconsDir = "$HOME/Pictures/icons/telegram-desktop";
     })
   ];
 }
