@@ -6,11 +6,12 @@ let
 
   mkIconPackage = { name, iconsDir }:
     pkgs.runCommand "${name}-icons" {} ''
-      mkdir -p $out
-      echo "$out"
-      for size in 16 24 32 48 64 128 256; do
-        if [ -f ${iconsDir}/''${size}x''${size}.png ]; then
-          install -Dm644 ${iconsDir} $out/share/icons
+      echo "out directory is: " $out
+      for size in 16 24 32 48 64 128 256 512; do
+        if [ -f ${iconsDir}/''${size}x''${size}/apps/org.telegram.desktop.png ]; then
+          mkdir -p $out/icons/hicolor/''${size}x''${size}/apps;
+          #install -Dm644 ${iconsDir}/''${size}x''${size}/apps/org.telegram.desktop.png \
+          #  $out/share/icons/hicolor/''${size}x''${size}/apps/${name}.png
         fi
       done
     '';
@@ -63,20 +64,14 @@ in
       name = "telegram-personal";
       displayName = "Telegram (Personal)";
       workdir = lib.strings.join "/" ["${homePath}" ".local/share/TelegramDesktop"];
-      iconsDir = lib.strings.join "/" ["${homePath}" "Pictures/icons/telegram-desktop"];
-      #workdir = lib.path.append "${config.users.users.<username>.home}" ".local/share/TelegramDesktop";
-      #workdir = "${HOME}/.local/share/TelegramDesktopWorking";
-      #iconsDir = "$HOME/Pictures/icons/telegram-desktop";
+      iconsDir = lib.strings.join "/" ["${homePath}" "Pictures/icons/hicolor"];
     })
 
     (mkTelegramInstance {
       name = "telegram-work";
       displayName = "Telegram (Work)";
       workdir = lib.strings.join "/" ["${homePath}" ".local/share/TelegramDesktopWorking"];
-      iconsDir = lib.strings.join "/" ["${homePath}" "Pictures/icons/telegram-desktop"];
-      #workdir = lib.path.append "${config.users.users.<username>.home}" ".local/share/TelegramDesktopWorking";
-      #workdir = "${HOME}/.local/share/TelegramDesktopWorking";
-      #iconsDir = "$HOME/Pictures/icons/telegram-desktop";
+      iconsDir = lib.strings.join "/" ["${homePath}" "Pictures/icons/hicolor"];
     })
   ];
 }
